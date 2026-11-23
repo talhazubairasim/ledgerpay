@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    name: .NET API (unit + Postgres integration)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - run: dotnet restore LedgerPay.sln
+      - run: dotnet build LedgerPay.sln --no-restore -c Release
+      # The API tests start a real Postgres 16 with Testcontainers.
+      - run: dotnet test LedgerPay.sln --no-build -c Release --logger "console;verbosity=normal" --collect:"XPlat Code Coverage"
+
+  web:
+    name: React app
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+      - run: npm run coverage
+      - run: npm run build
+
+  e2e:
+    name: End-to-end (docker compose)
+    runs-on: ubuntu-latest
+    needs: [api, web]
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker compose up -d --build
+      - run: ./scripts/e2e.sh
+      - name: App is served and proxies the API
+        run: |
+          curl -fs http://localhost:3000 | grep -q '<div id="root">'
+          curl -fs http://localhost:3000/api/auth/login -H 'Content-Type: application/json' \
+            -d '{"clinic":"demo","email":"demo@ledgerpay.dev","password":"Demo#2025"}' | grep -q token
+      - name: Logs
+        if: failure()
+        run: docker compose logs --no-color --tail=200
+      - if: always()
+        run: docker compose down -v

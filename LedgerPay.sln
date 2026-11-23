@@ -1,0 +1,37 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFA3}") = "LedgerPay.Domain", "src\LedgerPay.Domain\LedgerPay.Domain.csproj", "{C9E17EFA-DD28-5439-89F1-D2D867E237BF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFA3}") = "LedgerPay.Api", "src\LedgerPay.Api\LedgerPay.Api.csproj", "{D851CD95-2FA4-591C-A0AF-91B2A3D5B08D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFA3}") = "LedgerPay.Domain.Tests", "tests\LedgerPay.Domain.Tests\LedgerPay.Domain.Tests.csproj", "{708188EB-C637-5E96-8F63-23FD26574B92}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFA3}") = "LedgerPay.Api.Tests", "tests\LedgerPay.Api.Tests\LedgerPay.Api.Tests.csproj", "{D9B71F25-11FB-5F66-A33B-DEA88697EA90}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C9E17EFA-DD28-5439-89F1-D2D867E237BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9E17EFA-DD28-5439-89F1-D2D867E237BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9E17EFA-DD28-5439-89F1-D2D867E237BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9E17EFA-DD28-5439-89F1-D2D867E237BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D851CD95-2FA4-591C-A0AF-91B2A3D5B08D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D851CD95-2FA4-591C-A0AF-91B2A3D5B08D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D851CD95-2FA4-591C-A0AF-91B2A3D5B08D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D851CD95-2FA4-591C-A0AF-91B2A3D5B08D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{708188EB-C637-5E96-8F63-23FD26574B92}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{708188EB-C637-5E96-8F63-23FD26574B92}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{708188EB-C637-5E96-8F63-23FD26574B92}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{708188EB-C637-5E96-8F63-23FD26574B92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D9B71F25-11FB-5F66-A33B-DEA88697EA90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D9B71F25-11FB-5F66-A33B-DEA88697EA90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D9B71F25-11FB-5F66-A33B-DEA88697EA90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D9B71F25-11FB-5F66-A33B-DEA88697EA90}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
