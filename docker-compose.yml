@@ -1,0 +1,38 @@
+# Full LedgerPay stack:  docker compose up --build
+#   App            http://localhost:3000   demo@ledgerpay.dev / Demo#2025 (customer)
+#                                          admin@ledgerpay.dev / Admin#2025 (back office)
+#   API + Swagger  http://localhost:5300/swagger
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ledgerpay
+      POSTGRES_PASSWORD: ledgerpay
+      POSTGRES_DB: ledgerpay
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ledgerpay"]
+      interval: 3s
+      retries: 20
+
+  api:
+    build: .
+    restart: unless-stopped
+    ports: ["5300:8080"]
+    environment:
+      ConnectionStrings__Ledger: Host=postgres;Database=ledgerpay;Username=ledgerpay;Password=ledgerpay
+      Jwt__Key: ${JWT_KEY:-development-only-signing-key-change-me-0123456789}
+      Seed__AdminPassword: ${ADMIN_PASSWORD:-Admin#2025}
+      Seed__Demo: "true"
+      Cors__Origins__0: http://localhost:3000
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  web:
+    build: ./web
+    restart: unless-stopped
+    ports: ["3000:80"]
+    depends_on: [api]
+
+volumes:
+  pgdata:

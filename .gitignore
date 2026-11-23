@@ -10,3 +10,4 @@ TestResults/
 .env
 *.tsbuildinfo
 *.tsbuildinfo
+*.tsbuildinfo

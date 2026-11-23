@@ -69,6 +69,17 @@ var users = app.Services.GetRequiredService<Users>();
 if (await users.FindAsync(config["Seed:AdminEmail"] ?? "admin@ledgerpay.dev") is null)
     await users.CreateAsync(config["Seed:AdminEmail"] ?? "admin@ledgerpay.dev", "LedgerPay Reviewer", config["Seed:AdminPassword"] ?? "Admin#2025", Roles.Admin);
 
+if (config.GetValue("Seed:Demo", false) && await users.FindAsync("demo@ledgerpay.dev") is null
+    && await users.CreateAsync("demo@ledgerpay.dev", "Ayesha Demo", "Demo#2025", Roles.Customer) is { } demo)
+{
+    var accounts = app.Services.GetRequiredService<AccountService>();
+    var main = await accounts.OpenAsync(demo.Id, "Everyday", "PKR");
+    await accounts.DepositAsync(main.Value.AccountId, 25_000_000, "Salary");
+    var savings = await accounts.OpenAsync(demo.Id, "Savings", "PKR");
+    await accounts.DepositAsync(savings.Value.AccountId, 1_000_000, "Opening deposit");
+    await accounts.OpenAsync(demo.Id, "Travel", "USD");
+}
+
 app.Run();
 
 public partial class Program;

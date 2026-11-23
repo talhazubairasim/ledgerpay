@@ -1,0 +1,93 @@
+# kubectl create namespace ledgerpay
+# kubectl -n ledgerpay create secret generic ledgerpay-secrets \
+#   --from-literal=postgres-password=... --from-literal=jwt-key=<at least 32 chars>
+# kubectl -n ledgerpay apply -f deploy/k8s/ledgerpay.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata: { name: postgres }
+spec:
+  serviceName: postgres
+  replicas: 1
+  selector: { matchLabels: { app: postgres } }
+  template:
+    metadata: { labels: { app: postgres } }
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          env:
+            - { name: POSTGRES_USER, value: ledgerpay }
+            - { name: POSTGRES_DB, value: ledgerpay }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: ledgerpay-secrets, key: postgres-password } }
+          ports: [{ containerPort: 5432 }]
+          readinessProbe: { exec: { command: [pg_isready, -U, ledgerpay] } }
+          volumeMounts: [{ name: data, mountPath: /var/lib/postgresql/data }]
+  volumeClaimTemplates:
+    - metadata: { name: data }
+      spec: { accessModes: [ReadWriteOnce], resources: { requests: { storage: 10Gi } } }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: postgres }
+spec: { selector: { app: postgres }, ports: [{ port: 5432 }] }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: api, labels: { app: api } }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: api } }
+  template:
+    metadata: { labels: { app: api } }
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/talhazubairasim/ledgerpay-api:latest
+          ports: [{ containerPort: 8080 }]
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: ledgerpay-secrets, key: postgres-password } }
+            - name: Jwt__Key
+              valueFrom: { secretKeyRef: { name: ledgerpay-secrets, key: jwt-key } }
+            - { name: ConnectionStrings__Ledger, value: "Host=postgres;Database=ledgerpay;Username=ledgerpay;Password=$(POSTGRES_PASSWORD)" }
+            - { name: Cors__Origins__0, value: "https://app.example.com" }
+            - { name: Seed__Demo, value: "false" }
+          readinessProbe: { httpGet: { path: /health, port: 8080 }, periodSeconds: 10 }
+          livenessProbe: { httpGet: { path: /health, port: 8080 }, periodSeconds: 30 }
+          resources:
+            requests: { cpu: 100m, memory: 192Mi }
+            limits: { memory: 512Mi }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: api }
+spec: { selector: { app: api }, ports: [{ port: 8080 }] }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: { name: web, labels: { app: web } }
+spec:
+  replicas: 2
+  selector: { matchLabels: { app: web } }
+  template:
+    metadata: { labels: { app: web } }
+    spec:
+      containers:
+        - { name: web, image: "ghcr.io/talhazubairasim/ledgerpay-web:latest", ports: [{ containerPort: 80 }] }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: web }
+spec: { selector: { app: web }, ports: [{ port: 80 }] }
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata: { name: ledgerpay }
+spec:
+  rules:
+    - host: app.example.com
+      http:
+        paths:
+          - { path: /api, pathType: Prefix, backend: { service: { name: api, port: { number: 8080 } } } }
+          - { path: /, pathType: Prefix, backend: { service: { name: web, port: { number: 80 } } } }
